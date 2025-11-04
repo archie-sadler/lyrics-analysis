@@ -1,9 +1,13 @@
 package org.example;
 //import java.util.HashMap;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+//import org.jsoup.Jsoup;
+//import org.jsoup.nodes.Document;
+//import org.jsoup.nodes.Element;
 import java.io.IOException;
+import com.opencsv.CSVReader;
+import java.io.FileReader;
+import com.opencsv.exceptions.CsvValidationException;
+
 
 
 /*
@@ -20,34 +24,56 @@ public class Main {
 
     public static void getLyrics(){
 
-        //song URL
-        String url = "https://genius.com/Radiohead-creep-lyrics";
+        //csv file directory path
+
+        String CSVfile = "song_lyrics.csv";
 
         try {
 
-            // complicated user agent to avoid bot detection
-            Document document = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.90 Safari/537.36")
-                    .get();
 
-            //string builder so it can be .append()ed
-            StringBuilder lyrics = new StringBuilder();
+            CSVReader reader = new CSVReader(new FileReader(CSVfile));
 
-            //genius holds the lyrics in a div structure like this:
-            for (Element element : document.select("div[data-lyrics-container='true']")) {
+            String[] nextLine;
 
-                lyrics.append(element.text()).append("\n");
+            int counter = 0;
+            String lyrics = "";
+
+            reader.readNext();
+
+            while((nextLine = reader.readNext()) != null && counter < 25){
+                
+                try{
+                String song = nextLine[0];
+                //String genre = nextLine[1];
+                //String artist = nextLine[2];
+                lyrics = nextLine[6];
+                
+                System.out.println();
+                System.out.println("Song: " + song);
+                System.out.println();
+
+                //System.out.println("Genre: " + genre);
+                //System.out.println("Artist: " + artist);
+
+                System.out.println("Lyrics: " + lyrics);
+                counter++;
+
+                } catch(Exception error){
+
+                }
             }
 
             //Remove all text before the first verse
-            String[] justLyricsArr = lyrics.toString().split("Verse 1");
+            String[] justLyricsArr = lyrics.split("Verse 1");
 
             //create a new string and remove words that aren't lyrics
             String justLyrics = justLyricsArr[1].replace("Chorus", "");
 
             //the rest of the characters / words we don't want
             justLyrics = justLyrics.replace("Bridge", "");
+
             justLyrics = justLyrics.replace("[", "");
+
             justLyrics = justLyrics.replace("]", "");
 
             if(justLyrics.contains("Verse 2")){
@@ -60,14 +86,15 @@ public class Main {
                 justLyrics = justLyrics.replace("Verse 3", "");
             }
 
-            System.out.println("Lyrics: " + "\n");
+            System.out.println("Lyrics: ");
+            System.out.println();
 
             iterateThroughString(justLyrics);
 
 
 
 
-        } catch (IOException error){
+        } catch (IOException | CsvValidationException error){
 
             System.err.println("Failed to fetch the page: " + error.getMessage());
             //error.printStackTrace();
@@ -104,6 +131,8 @@ public class Main {
 
 
     public static void main(String[] args) {
+
+        //System.out.println("Current working directory: " + System.getProperty("user.dir"));
 
         getLyrics();
     }
